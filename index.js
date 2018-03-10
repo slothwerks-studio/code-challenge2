@@ -6,53 +6,91 @@
 // does not constitute multiple valid locations: if four contiguous seats are available, 
 // this only constitutes one valid seating location.
 //
-// The challenge: write a function in a language of your choosing. This function will take in two arguments: 
+// The challenge: write a function in a language of your choosing. This function will take in two arguments:
+//
 // 1) an array of purchased seats in no particular order with the syntax of [row][seat], and 
 // 2) the number of rows. The seats in each row are arranged thusly: a cluster of three (A, B, and C), 
 // a cluster of four (D, E, F, and G), and a cluster of three (H, J, and K). 
 // Please note the lack of a seat I (as in India). 
-// The function should return the valid number of seating locations for the family of three:
-// 
-// function validLocations (purchasedSeats, rows) {
-// 
-//   … some code …
-// 
-//   return locations
 //
-// }
-
+// The function should return the valid number of seating locations for the family of three.
+// 
 // Okay.  This is a logic puzzle.
 // Given an array of strings that are reserved seats, we need to determine the number of possible clusters
 // which include 3 contiguous seats.  In this puzzle, there are three clusters:  a cluster of three (seats A, B, and C),
 // followed by a cluster of four (seats D, E, F, and G), followed by a cluster of three (seats H, J, and K).
 // The first and third cluster follow the same rule:
 // 
-// * If any seat in the cluster is reserved, it cannot be a valid seating location.
+// * If all seats in the cluster are not reserved, it is a valid seating location.
 //
-// As for the middle cluster, we need to follow three rules:
+// As for the middle cluster, we apply the above logic twice:
 //
-// * If either of the middle two seats are reserved (seats E or F), it cannot be a valid seating location.
-// * If the middle two seats are not reserved and the first seat is reserved (seat D), then the last seat (seat G) 
-//   must not be reserved in order for the cluster to be a valid seating location.
-// * If the middle two seats are not reserved and the last seat is reserved (seat G), then the first seat (seat A)
-//   must not be reserved in order for the cluster to be a valid seating location.
+// * If the first three seats (D, E, and F) are not reserved, this cluster is a valid seating location.  
+// It may also be a valid seating location if the last three seats (E, F, and G) are available.
 // 
-// It will be much easier to simply eliminate clusters and determine if they are NOT a valid location.  All we need to
-// do is organize the data in a way that is useful (rather than the seat reservations being randomly dumped into an array).
+// This logic seems fairly easy to implement.  All we need to do is organize the data in a way 
+// that is useful (rather than the seat reservations being randomly dumped into an array).
 
-// Let's start with some dummy data.
+// We're using a "submit" button in a form to acquire our data, so first we'll stop the webpage from refreshing upon submit.
+// We will add an event listener on the form, forcing it to prevent its default behavior:
 
-const numberOfRows = 10; // Arbitrary number of rows
-const totalNumberOfSeats = numberOfRows * 10; // Total number of seats (given ten seats per row)
-const numberOfReservations = getRandomInt(1, totalNumberOfSeats); // Randomly generate the total number of reservations
-const reservedSeats = seatReservationBuilder(numberOfRows, numberOfReservations); // Create randomized list of reserved seats
+const userForm = document.getElementById("userForm");
 
-console.log("Number of rows: " + numberOfRows);
-console.log("List of reserved seats: " + reservedSeats);
+function handleForm(event) { 
+	event.preventDefault(); 
+} 
 
-const numberOfValidLocations = validLocations(reservedSeats, numberOfRows);
+userForm.addEventListener('submit', handleForm);
 
-console.log("Given " + numberOfRows + " rows of seats and an array of existing seat reservations, the number of valid locations where we may fit a family of three will be " + numberOfValidLocations + ".");
+// This is the function called when the submit button on the website is pressed.
+
+function getResults() {
+  
+  // Fetch user input and convert to integer
+  userInput = parseInt((document.getElementById("numberOfRows").value), 10);
+  console.log("Reported user input: " + userInput);
+  
+  // Sanitize...
+    if (userInput <= 0 || userInput > 30) {
+      console.log("This is not going to work.");
+      document.getElementById("formWarning").innerHTML = "For the sake of sanity, please limit your entry to a positive integer between 1 and 30.";
+      return;
+      
+    } else {
+
+      clearWarning(); // Clear any existing warning on the webpage      
+      const numberOfRows = userInput;
+      console.log("Number of rows: " + numberOfRows);
+      const totalNumberOfSeats = numberOfRows * 10; // Total number of seats (given ten seats per row)
+      const numberOfReservations = getRandomInt(1, totalNumberOfSeats); // Randomly generate the total number of reservations
+      const reservedSeats = seatReservationBuilder(numberOfRows, numberOfReservations); // Create randomized list of reserved seats
+      console.log("List of reserved seats: " + reservedSeats);
+      
+      // Build a visual schematic of the seats using createSeatReservationData()
+      
+      const seatReservationData = createSeatReservationData(reservedSeats, numberOfRows); // Create magic Sloth version of reserved seats
+      const seatingTable = buildTable(seatReservationData); // Create HTML for seating table
+      // Insert table HTML into the DOM
+      document.getElementById("schematic").innerHTML = seatingTable;
+
+      const numberOfValidLocations = validLocations(reservedSeats, numberOfRows);
+      const responseText = "Given " + numberOfRows + " rows of seats and the current seat reservations, the number of valid locations where we may fit a family of three will be " + numberOfValidLocations + ".";
+      console.log(responseText);
+      // Insert response text into the DOM and remove the user prompt
+      document.getElementById("resultText").innerHTML = responseText;
+      document.getElementById("prompt").innerHTML = "";
+
+  	}
+      
+}
+
+// Clear any existing warning shown on the page
+
+function clearWarning () {
+	document.getElementById("formWarning").innerHTML = "";
+}
+
+// This is the heart of it all:  the function that actually determines the valid locations per the code challenge.
 
 function validLocations(purchasedSeats, rows) {
 
@@ -77,8 +115,8 @@ function validLocations(purchasedSeats, rows) {
 		row.seats.forEach(function(seat) {
 			rowSeats.push(seat.slice(-1));
 		});
-		console.log("Row Number: " + row.row);
-		console.log(rowSeats);
+		// console.log("Row Number: " + row.row);
+		// console.log(rowSeats);
 		// So let's tackle the first seat cluster.  If no reservations are found for seats A, B, and C, 
 		// we will be able to fit our family of three in that location.
 		// We'll use the indexOf method, which will return -1 if the argument cannot be found within the array.
@@ -96,7 +134,7 @@ function validLocations(purchasedSeats, rows) {
 		} else if (rowSeats.indexOf("E") === -1 && rowSeats.indexOf("F") === -1 && rowSeats.indexOf("G") === -1) {
 			validSeatingLocationsInThisRow++;
 		}
-		console.log("Number of valid seating locations in this row: " + validSeatingLocationsInThisRow);
+		// console.log("Number of valid seating locations in this row: " + validSeatingLocationsInThisRow);
 		validSeatingLocations = validSeatingLocations + validSeatingLocationsInThisRow;
 	});
 
@@ -145,4 +183,58 @@ function createSeatReservationData(purchasedSeats, rows) {
 		purchasedSeatingData.push(rowData); // Add the row object to our new data array
 	}
 	return purchasedSeatingData;
+}
+
+// The buildTable function takes in the data structure created by createSeatReservationData
+// and builds an HTML table that can be manipulated using CSS to visually display the seats.
+// If this looks intensely painful, you're right:  we could have done all of this with just a few lines in React.
+
+function buildTable(purchasedSeatingData) {
+  
+  // initialize string which will contain our entire table
+  let tableHtml = '<table><tr class="header-row"><td class="empty-cell"></td><td class="column-header">A</td><td class="column-header">B</td><td class="column-header">C</td><td class="empty-cell"></td><td class="column-header">D</td><td class="column-header">E</td><td class="column-header">F</td><td class="column-header">G</td><td class="empty-cell"></td><td class="column-header">H</td><td class="column-header">J</td><td class="column-header">K</td></tr>';
+
+  purchasedSeatingData.forEach(function(row) {
+    
+    // For each row, create an array of seat letters
+    let rowSeats = [];
+    row.seats.forEach(function(seat) {
+      let seatLetter = seat.slice(-1);
+      rowSeats.push(seatLetter);
+    });
+    
+    // Build variables to include classes based on seats in the current row
+    let seatA = '';
+    let seatB = '';
+    let seatC = '';
+    let seatD = '';
+    let seatE = '';
+    let seatF = '';
+    let seatG = '';
+    let seatH = '';
+    let seatJ = '';
+    let seatK = '';
+    if (rowSeats.indexOf('A') !== -1) { seatA = '<td class="selected"></td>'; } else { seatA = '<td class="not-selected"></td>'; }
+    if (rowSeats.indexOf('B') !== -1) { seatB = '<td class="selected"></td>'; } else { seatB = '<td class="not-selected"></td>'; }
+    if (rowSeats.indexOf('C') !== -1) { seatC = '<td class="selected"></td>'; } else { seatC = '<td class="not-selected"></td>'; }
+    if (rowSeats.indexOf('D') !== -1) { seatD = '<td class="selected"></td>'; } else { seatD = '<td class="not-selected"></td>'; }
+    if (rowSeats.indexOf('E') !== -1) { seatE = '<td class="selected"></td>'; } else { seatE = '<td class="not-selected"></td>'; }  
+    if (rowSeats.indexOf('F') !== -1) { seatF = '<td class="selected"></td>'; } else { seatF = '<td class="not-selected"></td>'; }
+    if (rowSeats.indexOf('G') !== -1) { seatG = '<td class="selected"></td>'; } else { seatG = '<td class="not-selected"></td>'; }
+    if (rowSeats.indexOf('H') !== -1) { seatH = '<td class="selected"></td>'; } else { seatH = '<td class="not-selected"></td>'; }
+    if (rowSeats.indexOf('J') !== -1) { seatJ = '<td class="selected"></td>'; } else { seatJ = '<td class="not-selected"></td>'; }
+    if (rowSeats.indexOf('K') !== -1) { seatK = '<td class="selected"></td>'; } else { seatK = '<td class="not-selected"></td>'; }        
+        
+    // Build the HTML for the table row
+    let tableRow = '<tr><td class="row-number">' + row.row + '</td>' + seatA + seatB + seatC + '<td class="empty-cell"></td>' + seatD + seatE + seatF + seatG + '<td class="empty-cell"></td>' + seatH + seatJ + seatK + '</tr>';
+    
+    // Add the table row to the existing table HTML
+    tableHtml = tableHtml + tableRow;
+  });
+  
+  // Add finishing tag to table HTML
+  tableHtml = tableHtml + '</table>';
+  
+  return tableHtml;
+  
 }
