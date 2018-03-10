@@ -1,0 +1,88 @@
+body {
+	font-family: "Trebuchet MS", "Open Sans", arial, helvetica, sans-serif;
+	margin: 0 auto;
+	padding: 20px;
+	width: 768px;
+}
+
+p {
+	line-height: 1.5em;
+	font-size: 1.1em;
+}
+
+p.center {
+	text-align: center;
+}
+
+p.justify {
+	text-align: justify;
+}
+
+img.sample {
+	display: block;
+	margin: 0 auto;
+}
+
+#userForm {
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.enterData {
+	width: 400px;
+	margin: 0 auto;
+	line-height: 1.5em;
+	font-size: 1.1em;
+}
+
+#formSubmit {
+	margin: 0 auto;
+	display: block;
+	width: 150px;
+	font-family: "Trebuchet MS", "Open Sans", arial, helvetica, sans-serif;
+	font-weight: bold;
+}
+
+p#formWarning {
+	line-height: 1.3em;
+	font-size: .9em;
+	color: red;
+	text-align: center;
+}
+
+#schematic table {
+	margin: 0 auto;
+}
+
+#schematic td {
+	font-size: 1.1em;
+	height: 30px;
+	width: 30px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+#schematic table tr {
+	 bottom-margin: 5px;
+}
+
+.empty-cell, .column-header {
+	border: none;
+	background: transparent;
+}
+
+#schematic .row-number {
+	text-align: left;
+}
+
+.not-selected, .selected {
+	border: 1px black solid;
+}
+
+.not-selected {
+	background: white;
+}
+
+.selected {
+	background: yellow;
+}
