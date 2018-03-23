@@ -46,7 +46,7 @@ userForm.addEventListener('submit', handleForm);
 // First we'll need to know the number of rows.  Then we'll need to build a table with those rows.
 
 // Initializing a "global" variable for the list of reserved seats...
-var seatReservationData = [];
+var seatReservationData;
 
 // Initializing a "global" variable for number of rows...
 var numberOfRows;
@@ -101,7 +101,10 @@ function getResults() {
       // Insert table HTML into the DOM
       document.getElementById("schematic").innerHTML = seatingTable;
       
-      // Create a prompt...
+      // Clear any current results and create a prompt...
+      seatReservationData = [];
+      document.getElementById("reserved-seats").innerHTML = "";
+      document.getElementById("resultText").innerHTML = "";
       document.getElementById("prompt").innerHTML = "Okay!  Click on some seats and let's run the requested function.  Or you can change the number of rows, re-build the table, and try again.";
       
       /*
