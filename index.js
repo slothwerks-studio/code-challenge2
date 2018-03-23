@@ -42,7 +42,19 @@ function handleForm(event) {
 
 userForm.addEventListener('submit', handleForm);
 
+// Let's put the user in control and allow him or her to select the seats to be added to the array, in no particular order.
+// First we'll need to know the number of rows.  Then we'll need to build a table with those rows.
+
+// Initializing a "global" variable for the list of reserved seats...
+var seatReservationData = [];
+
+// Initializing a "global" variable for number of rows...
+var numberOfRows;
+
 // This is the function called when the submit button on the website is pressed.
+// Originally it built a randomized array of seat reservations, built an HTML table to display those reservations,
+// and then displayed the results of the validLocations function.  Now it instead builds an empty table
+// for the user to manipulate.  Thus there are many sections now commented out.
 
 function getResults() {
   
@@ -59,7 +71,10 @@ function getResults() {
     } else {
 
       clearWarning(); // Clear any existing warning on the webpage      
+      
+    /* 
       const numberOfRows = userInput;
+      
       console.log("Number of rows: " + numberOfRows);
       const totalNumberOfSeats = numberOfRows * 10; // Total number of seats (given ten seats per row)
       const numberOfReservations = getRandomInt(1, totalNumberOfSeats); // Randomly generate the total number of reservations
@@ -74,11 +89,33 @@ function getResults() {
       document.getElementById("schematic").innerHTML = seatingTable;
 
       const numberOfValidLocations = validLocations(reservedSeats, numberOfRows);
+      
+      */
+      
+      // Update the "global" numberOfRows variable with the sanitized user input...
+      numberOfRows = userInput;
+      
+      // Build the interactive table
+      const seatingTable = buildTable2(numberOfRows);
+
+      // Insert table HTML into the DOM
+      document.getElementById("schematic").innerHTML = seatingTable;
+      
+      // Create a prompt...
+      document.getElementById("prompt").innerHTML = "Okay!  Click on some seats and let's run the requested function.  Or you can change the number of rows, re-build the table, and try again.";
+      
+      /*
+      
+      // Dump the "global" seat array into the validLocations function along with the number of rows...
+      const numberOfValidLocations = validLocations(seatReservationData, numberOfRows);
+      
       const responseText = "Given " + numberOfRows + " rows of seats and the current seat reservations, the number of valid locations where we may fit a family of three will be " + numberOfValidLocations + ".";
       console.log(responseText);
       // Insert response text into the DOM and remove the user prompt
       document.getElementById("resultText").innerHTML = responseText;
       document.getElementById("prompt").innerHTML = "";
+      
+      */
 
   	}
       
@@ -238,3 +275,87 @@ function buildTable(purchasedSeatingData) {
   return tableHtml;
   
 }
+
+// The buildTable2 function is a new spin on this project:  it takes in a number of rows and then builds a "blank"
+// table with which the user can interact to select seats to add to the seat array "by hand".
+
+function buildTable2(rows) {
+  
+  // initialize string which will contain our entire table and add to it an initial string of HTML containing
+  // the starting <table> tag and first row of seat markers (A, B, C, D, E, F, G, H, J)
+  let tableHtml = '<table><tr class="header-row"><td class="empty-cell"></td><td class="column-header">A</td><td class="column-header">B</td><td class="column-header">C</td><td class="empty-cell"></td><td class="column-header">D</td><td class="column-header">E</td><td class="column-header">F</td><td class="column-header">G</td><td class="empty-cell"></td><td class="column-header">H</td><td class="column-header">J</td><td class="column-header">K</td></tr>';
+  
+  // Now let's build the "meat" of the table with a for loop:
+  
+  for (i = 1; i <= rows; i++) {
+    // Build the HTML for the table row, adding in an onclick handler
+    let newRow = '<tr id="row-number-' + i + '"><td class="row-number">' + i + '</td><td id="seat-' + i + 'A" class="not-selected" onclick="seatToggle(this.id)"></td><td id="seat-' + i + 'B" class="not-selected" onclick="seatToggle(this.id)"></td><td id="seat-' + i + 'C" class="not-selected" onclick="seatToggle(this.id)"></td><td class="empty-cell"></td><td id="seat-' + i + 'D" class="not-selected" onclick="seatToggle(this.id)"><td id="seat-' + i + 'E" class="not-selected" onclick="seatToggle(this.id)"><td id="seat-' + i + 'F" class="not-selected" onclick="seatToggle(this.id)"><td id="seat-' + i + 'G" class="not-selected" onclick="seatToggle(this.id)"><td class="empty-cell"></td><td id="seat-' + i + 'H" class="not-selected" onclick="seatToggle(this.id)"><td id="seat-' + i + 'J" class="not-selected" onclick="seatToggle(this.id)"><td id="seat-' + i + 'K" class="not-selected" onclick="seatToggle(this.id)"></tr>';
+    // Add the new row to the existing table HTML string
+    tableHtml = tableHtml + newRow;
+  }
+  
+  // Add finishing tag to table HTML
+  tableHtml = tableHtml + '</table>';
+  
+  return tableHtml;
+  
+}
+
+// The seatToggle function flips the class of the clicked seat within the HTML DOM and manipulates the "global"
+// seating array accordingly.  It also will display the current results to the HTML DOM (or remove it).
+
+function seatToggle(seat) {
+  
+  // Because HTML ID's cannot start with a number, we need to take off the "seat-" from the seat ID...
+    seatId = seat.replace("seat-", "");
+  
+  if (document.getElementById(seat).className == "not-selected") {
+    document.getElementById(seat).className = "selected"; 
+    seatReservationData.push(seatId);
+  } else if (document.getElementById(seat).className == "selected") { 
+    document.getElementById(seat).className = "not-selected";
+    const seatIndex = seatReservationData.indexOf(seatId);
+    seatReservationData.splice(seatIndex, 1);
+  }
+  
+  // This section displays the results or removes the results if the seat array is empty.
+  if (seatReservationData.length != 0) {
+    displayCurrentReservations(seatReservationData);
+    displayValidSeatingLocations(seatReservationData, numberOfRows);
+  } else {
+    document.getElementById("reserved-seats").innerHTML = "";
+    document.getElementById("resultText").innerHTML = "";
+    document.getElementById("prompt").innerHTML = "Ummmmm... didn't you want to select some seats?";
+  }
+  
+}
+
+// The displayCurrentReservations function dumps the content of the current seating reservations into the HTML DOM.
+
+function displayCurrentReservations(purchasedSeats) {
+  
+  let listOfSeats = "";
+  seatReservationData.forEach(function(seat) {
+    // Because HTML ID's cannot start with a number, we need to take off the "seat-" from the seat ID...
+    seatId = seat.replace("seat-", "");
+    listOfSeats = listOfSeats + seatId + ", ";
+  });
+  
+  document.getElementById("reserved-seats").innerHTML = "The current list of reserved seats are as follows:<br />" + listOfSeats;
+  
+}
+
+// The displayValidSeatingLocations function updates the HTML DOM, displaying the results of the validLocations function.
+
+function displayValidSeatingLocations(purchasedSeats, rows) {
+  
+  const numberOfValidLocations = validLocations(purchasedSeats, rows);
+  
+  const responseText = "Given " + numberOfRows + " rows of seats and the current seat reservations, the number of valid locations where we may fit a family of three will be " + numberOfValidLocations + ".";
+
+  // Insert response text into the DOM
+  document.getElementById("resultText").innerHTML = responseText;
+  document.getElementById("prompt").innerHTML = "";
+  
+}
+
