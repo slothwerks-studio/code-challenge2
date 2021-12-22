@@ -14,4 +14,6 @@ The challenge: write a function in a language of your choosing. This function wi
 
 This challenge can be completed using both front end and back end technologies.  For the front end students, feel free to craft a gorgeous interface!  Dazzle us with modals, transitions and any other goodies you may desire.  Be sure to practice your git skills:  initialize a repo and commit your changes as you work.  Bonus front end challenge:  create an interactive UI which allows a user to select the seats to be added to the reserved seats array.
 
-Have fun!
+### Is there a live demo?
+
+Of course there is.  [Check it out!](https://slothwerks-studio.github.io/code-challenge2/)
